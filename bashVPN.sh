@@ -43,3 +43,20 @@ echo "Управление VPN-доступами"
 echo "Вбиваем в строку браузера - http://${SERVER_IP}:51821"
 echo "где ${SERVER_IP} — IP-адрес вашего сервера."
 
+
+docker run -d \
+  --name=wg-easy \
+  -e WG_HOST="ТВОЙ АЙПИ" \
+  -e PORT=51821 \
+  -e HOST=0.0.0.0 \
+  -e INSECURE=true \
+  -v ~/.wg-easy:/etc/wireguard \
+  -v /lib/modules:/lib/modules \
+  -p 51820:51820/udp \
+  -p 51821:51821/tcp \
+  --cap-add=NET_ADMIN \
+  --cap-add=SYS_MODULE \
+  --sysctl="net.ipv4.conf.all.src_valid_mark=1" \
+  --sysctl="net.ipv4.ip_forward=1" \
+  --restart unless-stopped \
+  ghcr.io/wg-easy/wg-easy:15
