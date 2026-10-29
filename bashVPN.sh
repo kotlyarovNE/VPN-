@@ -60,3 +60,42 @@ docker run -d \
   --sysctl="net.ipv4.ip_forward=1" \
   --restart unless-stopped \
   ghcr.io/wg-easy/wg-easy:15
+
+  _______________________
+
+
+  #!/bin/bash
+
+# Останавливаем скрипт при любой ошибке
+set -e
+
+echo "======================================================"
+echo "🚀 Начинаем установку и настройку Tailscale..."
+echo "======================================================"
+
+# 1. Установка Tailscale
+echo "⏳ [1/4] Установка Tailscale..."
+curl -fsSL https://tailscale.com/install.sh | sh
+
+# 2. Включение IP-форвардинга (IPv4 и IPv6)
+echo "⏳ [2/4] Настройка форвардинга пакетов (IP Forwarding)..."
+echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+sysctl -p /etc/sysctl.d/99-tailscale.conf > /dev/null
+
+# 3. Авторизация в сети Tailscale
+echo "⏳ [3/4] Авторизация Tailscale..."
+echo "⚠️  ВАЖНО: Сейчас появится ссылка. Скопируйте её, откройте в браузере и войдите в свой аккаунт (tablovo@gmail.com)."
+echo "Скрипт будет ждать, пока вы не завершите авторизацию..."
+tailscale up
+
+# 4. Объявление сервера как Exit Node
+echo "⏳ [4/4] Включение режима Exit Node..."
+tailscale set --advertise-exit-node
+
+echo "======================================================"
+echo "✅ ВСЁ ГОТОВО!"
+echo "======================================================"
+echo "Не забудьте зайти в веб-панель Tailscale (https://login.tailscale.com/admin/machines),"
+echo "нажать на меню (три точки) возле сервера, выбрать 'Edit route settings...'"
+echo "и поставить галочку 'Use as exit node'."
